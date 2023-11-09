@@ -1,10 +1,10 @@
 [package]
 name = "mext"
-version = "0.1.0"
+version = "0.2.0"
 description = "A Text Editor"
-authors = ["you"]
-license = ""
-repository = ""
+authors = ["AvaterClasher"]
+license = "MIT"
+repository = "https://github.com/AvaterClasher/mext"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
