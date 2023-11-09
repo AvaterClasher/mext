@@ -353,7 +353,7 @@ fn main() {
     // retrieve_last_opened(&config_hashmap, config_raw);
 
     save_config();
-
+    let _ = fix_path_env::fix();
     tauri::Builder::default()
         .invoke_handler(tauri::generate_handler![
             save_title,
