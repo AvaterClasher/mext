@@ -291,7 +291,7 @@ fn save_title(old_path: String, new_path: String) {
             .to_string();
 
     let mut json_contents: Value = serde_json::from_str(&contents)
-        .expect("Couldn't turn config to JSON in update_last_opened.");
+        .expect("Couldn't turn config to JSON in update last opened.");
     let children = json_contents["children"].as_array_mut().unwrap();
 
     match fs::rename(old_path_buf, &new_path_buf) {
