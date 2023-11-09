@@ -324,7 +324,7 @@ fn save_title(old_path: String, new_path: String) {
         }
         Err(_) => match fs::write(new_path_buf, "") {
             Ok(_) => {
-                println!("Rename failed, attempted creation successful.");
+                println!("Rename failed attempted creation successful.");
             }
             Err(e) => {
                 eprintln!("Rename failed, attempted creation fail: {:?}", e);
