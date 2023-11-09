@@ -1,46 +1,54 @@
 {
-  "build": {
-    "beforeDevCommand": "",
-    "beforeBuildCommand": "",
-    "devPath": "../src",
-    "distDir": "../src",
-    "withGlobalTauri": true
-  },
-  "package": {
-    "productName": "mext",
-    "version": "0.0.0"
-  },
-  "tauri": {
-    "allowlist": {
-      "all": false,
-      "shell": {
-        "all": false,
-        "open": true
-      }
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "com.mext.dev",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
-      ]
-    },
-    "security": {
-      "csp": null
-    },
-    "windows": [
-      {
-        "fullscreen": true,
-        "resizable": true,
-        "title": "mext",
-        "width": 800,
-        "height": 600
-      }
-    ]
-  }
+	"build": {
+		"beforeDevCommand": "",
+		"beforeBuildCommand": "",
+		"devPath": "../src",
+		"distDir": "../src",
+		"withGlobalTauri": true
+	},
+	"package": {
+		"productName": "mext",
+		"version": "0.1.0"
+	},
+	"tauri": {
+		"allowlist": {
+			"all": false,
+			"shell": {
+				"all": false,
+				"open": true
+			}
+		},
+		"bundle": {
+			"active": true,
+			"targets": "all",
+			"identifier": "com.mext.dev",
+			"icon": [
+				"icons/32x32.png",
+				"icons/128x128.png",
+				"icons/128x128@2x.png",
+				"icons/icon.icns",
+				"icons/icon.ico"
+			]
+		},
+		"updater": {
+			"active": true,
+			"endpoints": [
+				"https://releases.myapp.com/{{target}}/{{arch}}/{{current_version}}"
+			],
+			"dialog": true,
+			"pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IENEMkJGMjNBOUMxM0E1NgpSV1JXT3NHcEk3L1NETXk1bjlPRDBzQ2RjRkJ2QThQeXY1QnpQWE9SVHVtVHMvajI0c1h0UUFURQo="
+		},
+		"security": {
+			"csp": null
+		},
+		"windows": [
+			{
+				"fullscreen": true,
+				"resizable": true,
+				"title": "mext",
+				"width": 800,
+				"height": 600
+			}
+		]
+	}
 }
