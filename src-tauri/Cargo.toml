@@ -1,6 +1,6 @@
 [package]
 name = "mext"
-version = "0.0.0"
+version = "0.1.0"
 description = "A Text Editor"
 authors = ["you"]
 license = ""
