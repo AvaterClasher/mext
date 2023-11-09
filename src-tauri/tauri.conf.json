@@ -31,7 +31,7 @@
 			]
 		},
 		"updater": {
-			"active": true,
+			"active": false,
 			"endpoints": [
 				"https://releases.myapp.com/{{target}}/{{arch}}/{{current_version}}"
 			],
@@ -43,7 +43,7 @@
 		},
 		"windows": [
 			{
-				"fullscreen": true,
+				"fullscreen": false,
 				"resizable": true,
 				"title": "mext",
 				"width": 800,
