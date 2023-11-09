@@ -1,15 +1,7 @@
-/** @format */
-
 const assignedElements = new Map();
 
 function assign(ta) {
-	if (
-		!ta ||
-		!ta.nodeName ||
-		ta.nodeName !== "TEXTAREA" ||
-		assignedElements.has(ta)
-	)
-		return;
+	if (!ta || !ta.nodeName || ta.nodeName !== 'TEXTAREA' || assignedElements.has(ta)) return;
 
 	let previousHeight = null;
 
@@ -23,12 +15,11 @@ function assign(ta) {
 			el = el.parentNode;
 		}
 
-		return () =>
-			arr.forEach(([node, scrollTop]) => {
-				node.style.scrollBehavior = "auto";
-				node.scrollTop = scrollTop;
-				node.style.scrollBehavior = null;
-			});
+		return ()=> arr.forEach(([node, scrollTop]) => {
+			node.style.scrollBehavior = 'auto';
+			node.scrollTop = scrollTop;
+			node.style.scrollBehavior = null;
+		});
 	}
 
 	const computed = window.getComputedStyle(ta);
@@ -45,49 +36,40 @@ function assign(ta) {
 		}
 
 		// disallow vertical resizing
-		if (computed.resize === "vertical") {
-			ta.style.resize = "none";
-		} else if (computed.resize === "both") {
-			ta.style.resize = "horizontal";
+		if (computed.resize === 'vertical') {
+			ta.style.resize = 'none';
+		} else if (computed.resize === 'both') {
+			ta.style.resize = 'horizontal';
 		}
 
-		let restoreScrollTops;
+		let restoreScrollTops
 
 		// remove inline height style to accurately measure situations where the textarea should shrink
 		// however, skip this step if the new value appends to the previous value, as textarea height should only have grown
 		if (testForHeightReduction) {
 			// ensure the scrollTop values of parent elements are not modified as a consequence of shrinking the textarea height
 			restoreScrollTops = cacheScrollTops(ta);
-			ta.style.minHeight = "";
+			ta.style.minHeight = '';
 		}
 
 		let newHeight;
 
-		if (computed.boxSizing === "content-box") {
-			newHeight =
-				ta.scrollHeight -
-				(parseFloat(computed.paddingTop) +
-					parseFloat(computed.paddingBottom));
+		if (computed.boxSizing === 'content-box') {
+			newHeight = ta.scrollHeight - (parseFloat(computed.paddingTop)+parseFloat(computed.paddingBottom));
 		} else {
-			newHeight =
-				ta.scrollHeight +
-				parseFloat(computed.borderTopWidth) +
-				parseFloat(computed.borderBottomWidth);
+			newHeight = ta.scrollHeight + parseFloat(computed.borderTopWidth)+parseFloat(computed.borderBottomWidth);
 		}
 
-		if (
-			computed.maxHeight !== "none" &&
-			newHeight > parseFloat(computed.maxHeight)
-		) {
-			if (computed.overflowY === "hidden") {
-				ta.style.overflow = "scroll";
+		if (computed.maxHeight !== 'none' && newHeight > parseFloat(computed.maxHeight)) {
+			if (computed.overflowY === 'hidden') {
+				ta.style.overflow = 'scroll';
 			}
 			newHeight = parseFloat(computed.maxHeight);
-		} else if (computed.overflowY !== "hidden") {
-			ta.style.overflow = "hidden";
+		} else if (computed.overflowY !== 'hidden') {
+			ta.style.overflow = 'hidden';
 		}
 
-		ta.style.minHeight = newHeight + "px";
+		ta.style.minHeight = newHeight+'px';
 
 		if (restoreTextAlign) {
 			ta.style.textAlign = restoreTextAlign;
@@ -98,18 +80,18 @@ function assign(ta) {
 		}
 
 		if (previousHeight !== newHeight) {
-			ta.dispatchEvent(new Event("autosize:resized", { bubbles: true }));
+			ta.dispatchEvent(new Event('autosize:resized', {bubbles: true}));
 			previousHeight = newHeight;
 		}
 
 		if (initialOverflowY !== computed.overflow && !restoreTextAlign) {
 			const textAlign = computed.textAlign;
 
-			if (computed.overflow === "hidden") {
+			if (computed.overflow === 'hidden') {
 				// Webkit fails to reflow text after overflow is hidden,
 				// even if hiding overflow would allow text to fit more compactly.
 				// The following is intended to force the necessary text reflow.
-				ta.style.textAlign = textAlign === "start" ? "end" : "start";
+				ta.style.textAlign = textAlign === 'start' ? 'end' : 'start';
 			}
 
 			setHeight({
@@ -126,28 +108,27 @@ function assign(ta) {
 		});
 	}
 
-	const handleInput = (function () {
+	const handleInput = (function(){
 		let previousValue = ta.value;
 
-		return () => {
+		return ()=> {
 			setHeight({
 				// if previousValue is '', check for height shrinkage because the placeholder may be taking up space instead
 				// if new value is merely appending to previous value, skip checking for height deduction
-				testForHeightReduction:
-					previousValue === "" || !ta.value.startsWith(previousValue),
+				testForHeightReduction: previousValue === '' || !ta.value.startsWith(previousValue),
 				restoreTextAlign: null,
 			});
 
 			previousValue = ta.value;
-		};
-	})();
+		}
+	}())
 
-	const destroy = ((style) => {
-		ta.removeEventListener("autosize:destroy", destroy);
-		ta.removeEventListener("autosize:update", fullSetHeight);
-		ta.removeEventListener("input", handleInput);
-		window.removeEventListener("resize", fullSetHeight); // future todo: consider replacing with ResizeObserver
-		Object.keys(style).forEach((key) => (ta.style[key] = style[key]));
+	const destroy = (style => {
+		ta.removeEventListener('autosize:destroy', destroy);
+		ta.removeEventListener('autosize:update', fullSetHeight);
+		ta.removeEventListener('input', handleInput);
+		window.removeEventListener('resize', fullSetHeight); // future todo: consider replacing with ResizeObserver
+		Object.keys(style).forEach(key => ta.style[key] = style[key]);
 		assignedElements.delete(ta);
 	}).bind(ta, {
 		height: ta.style.minHeight,
@@ -158,12 +139,12 @@ function assign(ta) {
 		wordWrap: ta.style.wordWrap,
 	});
 
-	ta.addEventListener("autosize:destroy", destroy);
-	ta.addEventListener("autosize:update", fullSetHeight);
-	ta.addEventListener("input", handleInput);
-	window.addEventListener("resize", fullSetHeight); // future todo: consider replacing with ResizeObserver
-	ta.style.overflowX = "hidden";
-	ta.style.wordWrap = "break-word";
+	ta.addEventListener('autosize:destroy', destroy);
+	ta.addEventListener('autosize:update', fullSetHeight);
+	ta.addEventListener('input', handleInput);
+	window.addEventListener('resize', fullSetHeight); // future todo: consider replacing with ResizeObserver
+	ta.style.overflowX = 'hidden';
+	ta.style.wordWrap = 'break-word';
 
 	assignedElements.set(ta, {
 		destroy,
@@ -190,26 +171,24 @@ function update(ta) {
 let autosize = null;
 
 // Do nothing in Node.js environment
-if (typeof window === "undefined") {
-	autosize = (el) => el;
-	autosize.destroy = (el) => el;
-	autosize.update = (el) => el;
+if (typeof window === 'undefined') {
+	autosize = el => el;
+	autosize.destroy = el => el;
+	autosize.update = el => el;
 } else {
 	autosize = (el, options) => {
 		if (el) {
-			Array.prototype.forEach.call(el.length ? el : [el], (x) =>
-				assign(x, options)
-			);
+			Array.prototype.forEach.call(el.length ? el : [el], x => assign(x, options));
 		}
 		return el;
 	};
-	autosize.destroy = (el) => {
+	autosize.destroy = el => {
 		if (el) {
 			Array.prototype.forEach.call(el.length ? el : [el], destroy);
 		}
 		return el;
 	};
-	autosize.update = (el) => {
+	autosize.update = el => {
 		if (el) {
 			Array.prototype.forEach.call(el.length ? el : [el], update);
 		}

@@ -1,218 +1,234 @@
-/** @format */
-
 async function handleCommandPrompt(text, args) {
-	console.log(text);
-	switch (text) {
-		case "New file":
-			await manage_new_file();
+    console.log(text)
+    switch (text) {
+        case 'New file':
+            await manage_new_file();
+            toast("New file created.");
 
-			break;
-		case "Close current file":
-			await close_file();
-			break;
+            break;
+        case 'Close current file':
+            await close_file();
+            toast("Current file closed.");
 
-		case "Command pallet":
-			commandPrompt();
-			break;
-		case "Switch file":
-			let target = $(`.pages > li:nth-child(${args})`)[0];
+            break;
 
-			if (!args || !target) return;
+        case 'Command pallet':
+            commandPrompt();
+            break;
+        case 'Switch file':
+            let target = $(`.pages > li:nth-child(${args})`)[0];
 
-			switch_tab(target);
-			update_active(args);
-			break;
-		case "Open file":
-			handle_open_file(args);
-			break;
-		case "Switch file (quick)":
-			handle_switch_quick();
-			break;
-	}
+            if (!args || !target) return;
+
+            switch_tab(target)
+            update_active(args);
+            break;
+        case 'Open file':
+            handle_open_file(args);
+            toast("File opening initiated.");
+
+            break;
+        case 'Switch file (quick)':
+            handle_switch_quick();
+            break;
+        case 'Copy HTML output':
+            writeText(document.querySelector('.ck-content').innerHTML);
+            toast("HTML output copied to clipboard");
+
+            break;
+    }
+}
+
+function toast(message, duration = 2000) {
+    Toastify({
+        text: '<img width="20" height="20" src="./assets/exclamation.png"/>' + message,
+        duration: duration,
+        close: false,
+        stopOnFocus: true,
+        escapeMarkup: false,
+    }).showToast();
 }
 
 async function handle_switch_quick() {
-	const i = $(".active").text();
-	const { next } = await revolver(i - 1);
+    const i = $('.active').text();
+    const { next } = await revolver(i - 1);
 
-	let target_ = $(`.pages > li:nth-child(${next + 1})`)[0];
+    let target_ = $(`.pages > li:nth-child(${next + 1})`)[0];
 
-	switch_tab(target_);
-	update_active(target_.textContent);
+    switch_tab(target_);
+    update_active(target_.textContent)
 }
 
 async function manage_new_file() {
-	let info = await new_file();
+    let info = await new_file();
 
-	window.title.val(info[0]);
-	window.editor.setData(info[1]);
-	window.path = info[0];
+    window.title.val(info[0]);
+    window.editor.setData(info[1]);
+    window.path = info[0];
 
-	let tabs_ = await get_tabs();
+    let tabs_ = await get_tabs();
 
-	update_active(tabs_.length);
+    update_active(tabs_.length);
 }
 
 async function close_file() {
-	const res = await update_opened(window.path, false);
-	const last = res.length - 1;
+    const res = await update_opened(window.path, false);
+    const last = res.length - 1;
 
-	if (!res[last]) {
-		const res = await new_file();
+    if (!res[last]) {
+        const res = await new_file();
 
-		window.path = res[0];
+        window.path = res[0];
 
-		if (
-			window.editor.getData() === "" &&
-			window.title.val().includes("Untitled")
-		) {
-			await delete_file(window.title.val());
-		}
 
-		window.title.val(res[0]);
-		window.editor.setData(res[1]);
+        if (window.editor.getData() === '' && window.title.val().includes("Untitled")) {
+            await delete_file(window.title.val());
+        }
 
-		const tabs = await get_tabs();
+        window.title.val(res[0]);
+        window.editor.setData(res[1]);
 
-		await manage_tabs(tabs);
-		await update_active(tabs.length);
+        const tabs = await get_tabs();
 
-		return;
-	}
+        await manage_tabs(tabs);
+        await update_active(tabs.length);
 
-	const path = await find_by_id(res[last]);
+        return;
+    }
 
-	window.path = path;
+    const path = await find_by_id(res[last]);
 
-	const file = await read_file(window.path);
+    window.path = path;
 
-	window.title.val(file[0]);
-	window.editor.setData(file[1]);
+    const file = await read_file(window.path);
 
-	const tabs = await get_tabs();
+    window.title.val(file[0]);
+    window.editor.setData(file[1]);
 
-	await manage_tabs(tabs);
-	await update_active(tabs.length);
+    const tabs = await get_tabs();
 
-	return;
+    await manage_tabs(tabs);
+    await update_active(tabs.length);
+
+    return;
 }
 
 async function get_tabs() {
-	const tabs = await retrieve_opened();
+    const tabs = await retrieve_opened();
 
-	return tabs;
+    return tabs;
 }
 
 function update_words(content) {
-	const chars = content.length;
-	const words = content.match(/(\w+)/g)?.length || 0;
+    const chars = content.length;
+    const words = content.match(/([^ ]+)/g)?.length || 0
 
-	$("#chars").text(chars?.toLocaleString());
-	$("#words").text(words?.toLocaleString());
+    $('#chars').text(chars?.toLocaleString());
+    $('#words').text(words?.toLocaleString());
 }
 
 async function handle_open_file(path) {
-	if (!path) return;
+    if (!path) return;
 
-	path = path.split("\\");
-	path = path[path.length - 1];
+    path = path.split('\\');
+    path = path[path.length - 1];
 
-	let info = await open_file(path);
+    let info = await open_file(path);
 
-	window.title.val(info[0]);
-	window.editor.setData(info[1]);
-	window.path = info[0];
+    window.title.val(info[0]);
+    window.editor.setData(info[1]);
+    window.path = info[0];
 
-	let tabs_ = await get_tabs();
+    let tabs_ = await get_tabs();
 
-	update_active(tabs_.length);
-	manage_tabs(tabs_);
+    update_active(tabs_.length);
+    manage_tabs(tabs_);
 }
 async function update_active(i) {
-	$(".active").removeClass("active");
-	$(`.pages > li:nth-child(${i})`).addClass("active");
+    $('.active').removeClass('active');
+    $(`.pages > li:nth-child(${i})`).addClass('active');
 }
 
 async function manage_tabs(tabs) {
-	const currentActive = $(".active").text();
+    const currentActive = $('.active').text();
 
-	$(".pages").html("");
+    $('.pages').html('');
 
-	for (let i = 0; i < tabs.length; i++) {
-		var newLi = $("<li>").text(i + 1);
+    for (let i = 0; i < tabs.length; i++) {
+        var newLi = $("<li>").text(i + 1);
 
-		if (i === currentActive - 1) {
-			newLi.addClass("active");
-		} else if (!currentActive && i === tabs.length - 1) {
-			newLi.addClass("active");
-		}
+        if (i === currentActive - 1) {
+            newLi.addClass("active");
+        } else if (!currentActive && i === tabs.length - 1) {
+            newLi.addClass("active");
+        }
 
-		$(".pages").append(newLi);
+        $(".pages").append(newLi);
 
-		const info = await read_file_by_id(tabs[i]);
+        const info = await read_file_by_id(tabs[i]);
 
-		tippy(`.pages > li:nth-child(${i + 1})`, {
-			content: info[0],
-		});
-	}
+        tippy(`.pages > li:nth-child(${i + 1})`, {
+            content: info[0],
+        });
+    }
 }
 
 async function retrieve_last_opened() {
-	const tabs = await get_tabs();
-	const info = await read_file_by_id(tabs[tabs.length - 1] || "0"); // default
+    const tabs = await get_tabs();
+    const info = await read_file_by_id(tabs[tabs.length - 1] || '0'); // default
 
-	manage_tabs(tabs);
+    manage_tabs(tabs);
 
-	if (info[0] === "") {
-		const res = await new_file();
+    if (info[0] === '') {
+        const res = await new_file();
 
-		return res;
-	}
+        return res;
+    }
 
-	return info;
+    return info;
 }
 
 async function switch_tab(target) {
-	const tabs = await get_tabs();
+    const tabs = await get_tabs();
 
-	const info = await read_file_by_id(tabs[target.textContent - 1]);
+    const info = await read_file_by_id(tabs[target.textContent - 1]);
 
-	window.title.val(info[0]);
-	window.editor.setData(info[1]);
-	window.path = window.title.val();
+    window.title.val(info[0]);
+    window.editor.setData(info[1]);
+    window.path = window.title.val();
 
-	$(".active").removeClass("active");
-	$(target).addClass("active");
+    $(".active").removeClass('active');
+    $(target).addClass('active');
 }
 
 async function revolver(i) {
-	const tabs123 = await get_tabs();
+    const tabs123 = await get_tabs();
 
-	const next = i - 1 < 0 ? tabs123.length - 1 : i - 1; // math :D
+    const next = (i - 1) < 0 ? tabs123.length - 1 : i - 1; // math :D
 
-	return { tabs: tabs123, next };
+    return { tabs: tabs123, next };
 }
 
 async function delete_tab(target) {
-	const i = target.textContent - 1;
+    const i = target.textContent - 1;
 
-	const { tabs, next } = await revolver(i);
+    const { tabs, next } = await revolver(i)
 
-	const path = await read_file_by_id(tabs[i]);
+    const path = await read_file_by_id(tabs[i]);
 
-	await update_opened(path[0], false);
-	delete_child(path[0]);
+    await update_opened(path[0], false);
+    delete_child(path[0]);
 
-	const info = await read_file_by_id(tabs[next]); // revolve
+    const info = await read_file_by_id(tabs[next]) // revolve
 
-	if (info[0] === "") return manage_new_file();
+    if (info[0] === '') return manage_new_file();
 
-	const tabs_ = await get_tabs();
+    const tabs_ = await get_tabs();
 
-	window.title.val(info[0]);
-	window.editor.setData(info[1]);
-	window.path = window.title.val();
+    window.title.val(info[0]);
+    window.editor.setData(info[1]);
+    window.path = window.title.val();
 
-	await manage_tabs(tabs_);
-	await update_active(next);
+    await manage_tabs(tabs_);
+    await update_active(next);
 }

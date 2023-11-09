@@ -27,7 +27,8 @@ struct Child {
 }
 
 lazy_static! {
-    static ref PATH: Mutex<String> = Mutex::new("/".to_string());
+    static ref PATH: Mutex<String> =
+        Mutex::new("C:/Users/User/Documents/GitHub/text-editor/Folder".to_string());
 }
 
 #[tauri::command]
@@ -39,7 +40,7 @@ fn save_file(path: String, content: String) {
 }
 
 fn save_config() {
-    if let Some(proj_dirs) = ProjectDirs::from("com", "Mext", "Data") {
+    if let Some(proj_dirs) = ProjectDirs::from("com", "Fextify", "Data") {
         let dir = proj_dirs.data_dir();
         let exists = &dir.join("config.json").exists();
 

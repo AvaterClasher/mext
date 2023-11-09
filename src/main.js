@@ -1,225 +1,222 @@
-/** @format */
-
-const textarea = document.getElementById("main");
-const display = document.getElementById("textDisplay");
+const textarea = document.getElementById('main');
+const display = document.getElementById('textDisplay');
 
 const cursor = document.getElementById("cursor");
+
 
 let tabs_ = await get_tabs();
 update_active(tabs_.length);
 
 let info = await retrieve_last_opened();
 
-if (info[0] === "None") (info[0] = ""), (info[1] = "");
+if (info[0] === 'None') info[0] = '', info[1] = ''
 
-window.title = $("#title");
-window.main = $("#main");
+window.title = $('#title');
+window.main = $('#main');
 
-const popup = $("#popup");
+const popup = $('#popup');
 
-window.path = info[0];
+window.path = info[0]
 update_words(info[1]);
 
 autosize(window.title);
 
-window.editor = await BalloonEditor.create(document.querySelector("#main"), {
-	extraPlugins: ["Markdown"],
-}).catch((error) => {
-	console.error(error);
-});
+window.editor = await BalloonEditor
+  .create(document.querySelector("#main"),
+    {
+      extraPlugins: ['Markdown']
+    })
+  .catch(error => {
+    console.error(error);
+  });
 
-window.title.val(window.path);
-editor.setData(info[1]);
+window.title.val(window.path)
+editor.setData(info[1])
 
-autosize.update(title);
+autosize.update(title)
 
-window.title.on("input", async () => {
-	save_title(window.path, window.title.val());
-	manage_tabs(await get_tabs());
+window.title.on('input', async () => {
+  save_title(window.path, window.title.val());
+  manage_tabs(await get_tabs());
 
-	window.path = window.title.val();
-});
+  window.path = window.title.val();
+})
 
 /* ***** */
 const observer = new MutationObserver(function (mutations) {
-	mutations.forEach(function (mutation) {
-		if (
-			mutation.type === "childList" ||
-			mutation.type === "characterData"
-		) {
-			const content = editor.getData();
+  mutations.forEach(function (mutation) {
+    if (mutation.type === "childList" || mutation.type === "characterData") {
+      const content = editor.getData();
 
-			update_words(content);
-			save(window.path, content);
-		}
-	});
+      update_words(content);
+      save(window.path, content);
+    }
+  });
 });
 
-observer.observe(textarea, {
-	childList: true,
-	characterData: true,
-	subtree: true,
-});
+observer.observe(textarea, { childList: true, characterData: true, subtree: true });
 
 /* ***** */
 
 window.title.keydown(function (e) {
-	if (!/[a-zA-Z0-9]| |\:|\!|\"|\'|\,|\./.test(e.key) || e.key == "Enter")
-		return e.preventDefault();
+  if (!/[a-zA-Z0-9]| |\:|\!|\"|\'|\,|\./.test(e.key) || e.key == "Enter") return e.preventDefault();
 });
 
-$(".pages").on("click", (event) => {
-	const target = event.target;
+$('.pages').on('click', (event) => {
+  const target = event.target;
 
-	if (event.ctrlKey) return delete_tab(target);
+  if (event.ctrlKey) return delete_tab(target);
 
-	switch_tab(target);
+  switch_tab(target);
 });
 
-$("body").keydown(async (e) => {
-	if (e.key === "p" && e.ctrlKey) {
-		e.preventDefault();
+$('body').keydown(async e => {
+  if (e.key === 'p' && e.ctrlKey) {
+    e.preventDefault();
 
-		commandPrompt();
-	}
-	if (e.key === "w" && e.ctrlKey) {
-		e.preventDefault();
+    commandPrompt();
+  }
+  if (e.key === 'w' && e.ctrlKey) {
+    e.preventDefault();
 
-		handleCommandPrompt("Close current file");
-	}
-	if (/^[1-9]*$/.test(e.key) && e.ctrlKey) {
-		e.preventDefault();
+    handleCommandPrompt('Close current file');
+  }
+  if (/^[1-9]*$/.test(e.key) && e.ctrlKey) {
+    e.preventDefault();
 
-		handleCommandPrompt("Switch file", e.key);
-	}
-	if (e.key === "n" && e.ctrlKey) {
-		e.preventDefault();
+    handleCommandPrompt('Switch file', e.key);
+  }
+  if (e.key === 'n' && e.ctrlKey) {
+    e.preventDefault();
 
-		handleCommandPrompt("New file");
-	}
-	if (e.key === "o" && e.ctrlKey) {
-		e.preventDefault();
+    handleCommandPrompt('New file');
+  }
+  if (e.key === 'o' && e.ctrlKey) {
+    e.preventDefault();
 
-		const arg = await ask_for_file();
+    const arg = await ask_for_file();
 
-		handleCommandPrompt("Open file", arg);
-	}
+    handleCommandPrompt('Open file', arg);
+  }
 
-	if (e.key === "Tab" && e.ctrlKey) {
-		e.preventDefault();
+  if (e.key === 'H' && e.ctrlKey && e.shiftKey) {
+    e.preventDefault();
 
-		handleCommandPrompt("Switch file (quick)");
-	}
+    handleCommandPrompt('Copy HTML output');
+  }
 
-	const focused = document.querySelector(".focused");
+  if (e.key === 'Tab' && e.ctrlKey) {
+    e.preventDefault();
 
-	if (e.key == "Enter" && focused) {
-		const suggestion = focused.querySelector(".left-content span");
-		const content = suggestion.textContent;
+    handleCommandPrompt('Switch file (quick)');
+  }
 
-		if (content === "Switch file") {
-			handleCommandPrompt(content, 1); // default to switch to 1st tab
-		} else handleCommandPrompt(content);
+  const focused = document.querySelector('.focused');
 
-		commandPrompt();
-	}
-});
+  if (e.key == 'Enter' && focused) {
+    const suggestion = focused.querySelector('.left-content span');
+    const content = suggestion.textContent;
+
+    if (content === 'Switch file') {
+      handleCommandPrompt(content, 1); // default to switch to 1st tab
+    } else handleCommandPrompt(content);
+
+    commandPrompt();
+  }
+})
 
 async function commandPrompt() {
-	let isDisabled = popup.prop("disabled");
+  let isDisabled = popup.prop('disabled');
 
-	if (isDisabled === undefined) isDisabled = true;
+  if (isDisabled === undefined) isDisabled = true;
 
-	const fadeAction = isDisabled ? "fadeIn" : "fadeOut";
+  const fadeAction = isDisabled ? 'fadeIn' : 'fadeOut'
 
-	const windowHeight = $(window).height();
-	const popupHeight = popup.outerHeight();
+  const windowHeight = $(window).height();
+  const popupHeight = popup.outerHeight();
 
-	const scrollPosition = $(window).scrollTop();
+  const scrollPosition = $(window).scrollTop();
 
-	const topPosition = scrollPosition + (windowHeight - popupHeight) / 2;
+  const topPosition = scrollPosition + (windowHeight - popupHeight) / 2;
 
-	popup.css("top", topPosition);
+  popup.css('top', topPosition);
 
-	popup[fadeAction](250, function () {
-		popup.prop("disabled", !isDisabled);
+  popup[fadeAction](250, function () {
+    popup.prop('disabled', !isDisabled);
 
-		if (isDisabled) {
-			$(".input").focus();
-			$("body").css("overflow-y", "hidden");
-		} else {
-			window.main.focus();
-			$("body").css("overflow-y", "auto");
-		}
-	});
+    if (isDisabled) {
+      $('.input').focus();
+      $('body').css('overflow-y', 'hidden');
+    } else {
+      window.main.focus();
+      $('body').css('overflow-y', 'auto');
+    }
+  });
 }
 
-document.addEventListener("keydown", handleArrowNavigation);
+document.addEventListener('keydown', handleArrowNavigation);
 
 function handleArrowNavigation(event) {
-	!popup.prop("disabled") && ["ArrowUp", "ArrowDown"].includes(event.key)
-		? event.preventDefault()
-		: "";
+  !popup.prop('disabled') && ['ArrowUp', 'ArrowDown'].includes(event.key) ? event.preventDefault() : '';
 
-	const navigableDivs = document.querySelectorAll(".suggestion");
-	let currentIndex = -1;
+  const navigableDivs = document.querySelectorAll('.suggestion');
+  let currentIndex = -1;
 
-	for (let i = 0; i < navigableDivs.length; i++) {
-		if (navigableDivs[i].classList.contains("focused")) {
-			currentIndex = i;
-			navigableDivs[i].classList.remove("focused");
-		}
-	}
+  for (let i = 0; i < navigableDivs.length; i++) {
+    if (navigableDivs[i].classList.contains('focused')) {
+      currentIndex = i;
+      navigableDivs[i].classList.remove('focused');
+    }
+  }
 
-	let nextIndex;
+  let nextIndex;
 
-	switch (event.key) {
-		case "ArrowUp":
-			nextIndex =
-				currentIndex > 0 ? currentIndex - 1 : navigableDivs.length - 1;
-			break;
+  switch (event.key) {
+    case 'ArrowUp':
+      nextIndex = currentIndex > 0 ? currentIndex - 1 : navigableDivs.length - 1;
+      break;
 
-		case "ArrowDown":
-			nextIndex =
-				currentIndex < navigableDivs.length - 1 ? currentIndex + 1 : 0;
-			break;
+    case 'ArrowDown':
+      nextIndex = currentIndex < navigableDivs.length - 1 ? currentIndex + 1 : 0;
+      break;
 
-		default:
-			return;
-	}
+    default:
+      return;
+  }
 
-	navigableDivs[nextIndex].classList.add("focused");
+  navigableDivs[nextIndex].classList.add('focused');
 }
 
 const options = {
-	valueNames: ["left-content"],
-	fuzzySearch: {
-		searchClass: "fuzzy-search",
-		location: 0,
-		distance: 100,
-		threshold: 0.4,
-		multiSearch: true,
-	},
+  valueNames: ['left-content'],
+  fuzzySearch: {
+    searchClass: 'fuzzy-search',
+    location: 0,
+    distance: 100,
+    threshold: 0.4,
+    multiSearch: true
+  }
 };
 
-const sl = new List("suggestionContainer", options);
-const sc = document.getElementById("suggestionContainer");
-const list = document.getElementById("suggestionList");
+const sl = new List('suggestionContainer', options);
+const sc = document.getElementById('suggestionContainer');
+const list = document.getElementById('suggestionList');
 
-const searchInput = document.getElementById("searchInput");
+const searchInput = document.getElementById('searchInput');
 
-searchInput.addEventListener("input", (event) => {
-	const query = event.target.value;
+searchInput.addEventListener('input', (event) => {
+  const query = event.target.value;
 
-	sl.fuzzySearch(query);
+  sl.fuzzySearch(query);
 
-	updatePromptHeight();
+  updatePromptHeight();
 });
 
-function updatePromptHeight() {
-	const newHeight = Math.min(list.children.length * 35, 500);
 
-	$(sc).animate({ height: `${newHeight}px` }, 100);
+function updatePromptHeight() {
+  const newHeight = Math.min(list.children.length * 35, 500);
+
+  $(sc).animate({ height: `${newHeight}px` }, 100)
 }
 
 updatePromptHeight();
